@@ -22,7 +22,22 @@ final class TasksViewController: UIViewController {
     
     
     @IBAction func addButtonTapped(_ sender: UIBarButtonItem) {
+        let alertController = UIAlertController(title: "Новая задача", message: "Введите название задачи", preferredStyle: .alert)
         
+        alertController.addTextField()
+        
+        let save = UIAlertAction(title: "Сохранить", style: .default) { _ in
+            guard let textField = alertController.textFields?.first, !textField.text!.isEmpty else { return }
+            
+            
+        }
+        
+        let cancel = UIAlertAction(title: "Отмена", style: .cancel)
+        
+        alertController.addAction(save)
+        alertController.addAction(cancel)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     

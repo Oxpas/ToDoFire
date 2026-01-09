@@ -8,8 +8,13 @@
 import Foundation
 import UIKit
 import FirebaseAuth
+import FirebaseDatabase
 
 final class TasksViewController: UIViewController {
+    
+    var user: FirebaseUser!
+    var ref: DatabaseReference!
+    var tasks = Array<Task>()
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -18,6 +23,11 @@ final class TasksViewController: UIViewController {
         
         tableView.dataSource = self
         tableView.delegate = self
+        
+        guard let currentUser = Auth.auth().currentUser else { return }
+        user = FirebaseUser(user: currentUser)
+        ref = Database.database().reference(withPath: "users").child(String(user.uid)).child("tasks")
+
     }
     
     
@@ -26,10 +36,12 @@ final class TasksViewController: UIViewController {
         
         alertController.addTextField()
         
-        let save = UIAlertAction(title: "Сохранить", style: .default) { _ in
-            guard let textField = alertController.textFields?.first, !textField.text!.isEmpty else { return }
+        let save = UIAlertAction(title: "Сохранить", style: .default) { [weak self] _ in
+            guard let textField = alertController.textFields?.first, textField.text != "" else { return }
             
-            
+            let task = Task(title: textField.text ?? "", userId: self?.user.uid ?? "")
+            let taskRef = self?.ref.child(task.title.lowercased())
+            taskRef?.setValue(task.convertToDictionary())
         }
         
         let cancel = UIAlertAction(title: "Отмена", style: .cancel)

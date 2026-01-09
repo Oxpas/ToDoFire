@@ -7,6 +7,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseDatabase
 
 class LoginViewController: UIViewController {
     
@@ -14,9 +15,13 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
     
+    var ref: DatabaseReference!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        ref = Database.database().reference(withPath: "users")
+        
         warnLabel.alpha = 0
         
         Auth.auth().addStateDidChangeListener { [weak self] auth, user in
@@ -33,7 +38,7 @@ class LoginViewController: UIViewController {
         passwordTextField.text = ""
     }
     
-
+    
     private func showWarningLabel(withText text: String) {
         warnLabel.text = text
         
@@ -42,9 +47,9 @@ class LoginViewController: UIViewController {
         } completion: { [weak self] complete in
             self?.warnLabel.alpha = 0
         }
-
+        
     }
-
+    
     @IBAction func signInTapped(_ sender: UIButton) {
         guard let email = emailTextField.text,
               let password = passwordTextField.text,
@@ -79,19 +84,19 @@ class LoginViewController: UIViewController {
             return
         }
         
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] user, error in
-            if error != nil {
-                self?.showWarningLabel(withText: "Error occured")
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
+            
+            if let error = error {
+                print(error.localizedDescription)
                 return
             }
             
-            if user != nil {
-                
-            } else {
-                self?.showWarningLabel(withText: "User is not created")
-            }
+            guard let self = self,
+                  let user = authResult?.user else { return }
+            
+            let userRef = self.ref.child(user.uid)
         }
+        
     }
-    
 }
 
